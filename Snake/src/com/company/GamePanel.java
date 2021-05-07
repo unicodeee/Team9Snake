@@ -1,12 +1,16 @@
 package com.company;
 
+import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 public class GamePanel extends JPanel implements ActionListener {
 
@@ -16,9 +20,9 @@ public class GamePanel extends JPanel implements ActionListener {
     static final int GAME_UNITS =     (SCREEN_HEIGHT*SCREEN_WIDTH)/UNIT_SIZE;
     static final int ROUND_CORNERS =     20;
 
-    static final int DELAY =     5;
-    final int x[] =  new int[GAME_UNITS];// Holds all the x coordinates of body parts, including the head ( snake <= game units)
-    final int y[] =  new int[GAME_UNITS];// Holds all the y coordinates of body parts, including the head ( snake <= game units)
+    static final int DELAY =     50;
+    int x[] =  new int[GAME_UNITS];// Holds all the x coordinates of body parts, including the head ( snake <= game units)
+    int y[] =  new int[GAME_UNITS];// Holds all the y coordinates of body parts, including the head ( snake <= game units)
     int bodyParts = 2;
     int appelsEaten;
     int appleX;
@@ -27,8 +31,24 @@ public class GamePanel extends JPanel implements ActionListener {
     boolean running = false;
     Timer timerl;
     Random random;
+    int count=3;
 
     GamePanel(){
+
+        try { // this block add music to the game
+            FileInputStream inputStream = new FileInputStream("src/com/company/Music/StarWars60.wav");
+            AudioInputStream soundIn = AudioSystem.getAudioInputStream(new BufferedInputStream(inputStream) );
+            AudioFormat format = soundIn.getFormat();
+            DataLine.Info info = new DataLine.Info(Clip.class, format);
+
+            Clip clip = (Clip) AudioSystem.getLine(info);
+            clip.open(soundIn);
+            clip.loop(Clip.LOOP_CONTINUOUSLY);
+            clip.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         random = new Random();
         this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
         this.setBackground(Color.BLACK);
@@ -41,8 +61,10 @@ public class GamePanel extends JPanel implements ActionListener {
     public void startGame(){
         newApple();
         running = true;
-        timerl = new Timer(DELAY, this); //???
-        timerl.start();
+        if (timerl == null) {
+            timerl = new Timer(DELAY, this); //???
+            timerl.start();
+        }
     }
     public void paintComponent(Graphics g){
         super.paintComponent(g);
@@ -68,10 +90,13 @@ public class GamePanel extends JPanel implements ActionListener {
                     g.fillRect(x[i], y[i], UNIT_SIZE, UNIT_SIZE);
                 }
             }
+
+
             g.setColor(Color.WHITE);
             g.setFont(new Font("Ink Free", Font.BOLD, 40));
             FontMetrics metrics = getFontMetrics(g.getFont());
             g.drawString("Score:"+ appelsEaten, (SCREEN_WIDTH - metrics.stringWidth("Score:"+ appelsEaten))/2, g.getFont().getSize() );
+
         }
         else {
             gameOver(g);
@@ -83,7 +108,7 @@ public class GamePanel extends JPanel implements ActionListener {
 
     }
     public void replay(){
-
+        startGame();
     }
     public void move(){
        for(int i = bodyParts; i>0;i-- ){
@@ -114,7 +139,7 @@ public class GamePanel extends JPanel implements ActionListener {
     }
     public void checkCollisions(){
         for (int i = bodyParts; i>0; i--){
-            if ((x[0] ==  x[i]) && (y[0] == y[i])){
+            if ((x[0] ==  x[i]) && (y[0] == y[i])){ // check if the head hits the body
                 running = false;
             }
         }
@@ -132,10 +157,23 @@ public class GamePanel extends JPanel implements ActionListener {
             running = false;
         }
 
-        if(running == false){
-            timerl.stop();
-        }
     }
+    public void restartIn(Graphics g){
+
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Ink Free", Font.BOLD, 30));
+        FontMetrics metric3 = getFontMetrics(g.getFont());
+        String reloading = "Game reloading in: " + count;
+        g.drawString(reloading, (SCREEN_WIDTH - metric3.stringWidth("You Suck"))/2, SCREEN_HEIGHT-100); // put the text in the center
+        count--;
+        try {
+            TimeUnit.SECONDS.sleep(1); // wait 1 sec
+        } catch (InterruptedException exp) {
+
+        }
+
+    }
+
     public void gameOver(Graphics g) { // game over - text
         // Score
         g.setColor(Color.WHITE);
@@ -145,8 +183,17 @@ public class GamePanel extends JPanel implements ActionListener {
         // Last message
         g.setColor(Color.WHITE);
         g.setFont(new Font("Ink Free", Font.BOLD, 75));
-        FontMetrics metrics = getFontMetrics(g.getFont());
-        g.drawString("Your Suck!", (SCREEN_WIDTH - metrics.stringWidth("You Suck"))/2, SCREEN_HEIGHT/2); // put the text in the center
+        FontMetrics metrics2 = getFontMetrics(g.getFont());
+        g.drawString("Your Suck!", (SCREEN_WIDTH - metrics2.stringWidth("You Suck"))/2, SCREEN_HEIGHT/2); // put the text in the center
+
+
+        if (count >=0){
+            restartIn(g); // keep drawing gameover screen
+        }else {
+            resetSettings();
+            startGame();
+        }
+
     }
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -155,10 +202,17 @@ public class GamePanel extends JPanel implements ActionListener {
             checkApple();
             checkCollisions();
         }
-
         repaint();
     }
 
+    public void resetSettings(){
+        appelsEaten = 0;
+        count = 3;
+        direction = 'R';
+        x =  new int[GAME_UNITS];// Holds all the x coordinates of body parts, including the head ( snake <= game units)
+        y =  new int[GAME_UNITS];// Holds all the y coordinates of body parts, including the head ( snake <= game units)
+        bodyParts = 2;
+    }
     public class MyKeyAdapter extends KeyAdapter{
         @Override
         public void keyPressed(KeyEvent e) {
