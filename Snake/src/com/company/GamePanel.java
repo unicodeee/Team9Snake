@@ -16,7 +16,7 @@ public class GamePanel extends JPanel implements ActionListener {
 
     static final int SCREEN_WIDTH =     600;
     static final int SCREEN_HEIGHT =     600;
-    static final int UNIT_SIZE =     20; // This number Should be fully divided by HEIGHT and WIDTH
+    static  int UNIT_SIZE =     5; // This number Should be fully divided by HEIGHT and WIDTH
     static final int GAME_UNITS =     (SCREEN_HEIGHT*SCREEN_WIDTH)/UNIT_SIZE;
     static final int ROUND_CORNERS =     20;
 
@@ -33,21 +33,8 @@ public class GamePanel extends JPanel implements ActionListener {
     Random random;
     int count=3;
 
-    GamePanel(){
-
-        try { // this block add music to the game
-            FileInputStream inputStream = new FileInputStream("src/com/company/Music/StarWars60.wav");
-            AudioInputStream soundIn = AudioSystem.getAudioInputStream(new BufferedInputStream(inputStream) );
-            AudioFormat format = soundIn.getFormat();
-            DataLine.Info info = new DataLine.Info(Clip.class, format);
-
-            Clip clip = (Clip) AudioSystem.getLine(info);
-            clip.open(soundIn);
-            clip.loop(Clip.LOOP_CONTINUOUSLY);
-            clip.start();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    GamePanel(int UNITS){
+        this.UNIT_SIZE = UNITS;
 
         random = new Random();
         this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
@@ -55,7 +42,6 @@ public class GamePanel extends JPanel implements ActionListener {
         this.setFocusable(true);
         this.addKeyListener(new MyKeyAdapter());
         startGame();
-
 
     }
     public void startGame(){
@@ -85,13 +71,13 @@ public class GamePanel extends JPanel implements ActionListener {
                     g.fillRect(x[i], y[i], UNIT_SIZE, UNIT_SIZE);
                 }
                 else {
-                    g.setColor(new Color(random.nextInt(255), random.nextInt(255), random.nextInt(255)));
-                    //g.setColor(Color.orange);
+                    g.setColor(new Color(random.nextInt(255), random.nextInt(255), random.nextInt(255))); // create random colors for the snake
+                    //g.setColor(Color.orange);  // 1 color for the whole snake
                     g.fillRect(x[i], y[i], UNIT_SIZE, UNIT_SIZE);
                 }
             }
 
-
+            // draw score
             g.setColor(Color.WHITE);
             g.setFont(new Font("Ink Free", Font.BOLD, 40));
             FontMetrics metrics = getFontMetrics(g.getFont());
@@ -159,19 +145,20 @@ public class GamePanel extends JPanel implements ActionListener {
 
     }
     public void restartIn(Graphics g){
-
+        // print "Game reloading in"
         g.setColor(Color.WHITE);
         g.setFont(new Font("Ink Free", Font.BOLD, 30));
         FontMetrics metric3 = getFontMetrics(g.getFont());
         String reloading = "Game reloading in: " + count;
-        g.drawString(reloading, (SCREEN_WIDTH - metric3.stringWidth("You Suck"))/2, SCREEN_HEIGHT-100); // put the text in the center
-        count--;
+        g.drawString(reloading, (SCREEN_WIDTH - metric3.stringWidth("You Suck"))/2 - 50, SCREEN_HEIGHT-100); // put the text in the center
+
+        count--; // count the time down
+
         try {
-            TimeUnit.SECONDS.sleep(1); // wait 1 sec
+            TimeUnit.SECONDS.sleep(1); // wait 1 sec (every count)
         } catch (InterruptedException exp) {
 
         }
-
     }
 
     public void gameOver(Graphics g) { // game over - text
@@ -184,7 +171,7 @@ public class GamePanel extends JPanel implements ActionListener {
         g.setColor(Color.WHITE);
         g.setFont(new Font("Ink Free", Font.BOLD, 75));
         FontMetrics metrics2 = getFontMetrics(g.getFont());
-        g.drawString("Your Suck!", (SCREEN_WIDTH - metrics2.stringWidth("You Suck"))/2, SCREEN_HEIGHT/2); // put the text in the center
+        g.drawString("Your Lose!", (SCREEN_WIDTH - metrics2.stringWidth("You Suck"))/2, SCREEN_HEIGHT/2); // put the text in the center
 
 
         if (count >=0){
@@ -241,7 +228,6 @@ public class GamePanel extends JPanel implements ActionListener {
                     running=true;
                     break;
             }
-
         }
     }
 }
