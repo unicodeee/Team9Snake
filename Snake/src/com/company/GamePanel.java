@@ -20,7 +20,7 @@ public class GamePanel extends JPanel implements ActionListener {
     static final int GAME_UNITS =     (SCREEN_HEIGHT*SCREEN_WIDTH)/UNIT_SIZE;
     static final int ROUND_CORNERS =     20;
 
-    static final int DELAY =     50;
+    static final int DELAY =     75;
     int x[] =  new int[GAME_UNITS];// Holds all the x coordinates of body parts, including the head ( snake <= game units)
     int y[] =  new int[GAME_UNITS];// Holds all the y coordinates of body parts, including the head ( snake <= game units)
     int bodyParts = 2;
@@ -76,7 +76,6 @@ public class GamePanel extends JPanel implements ActionListener {
                     g.fillRect(x[i], y[i], UNIT_SIZE, UNIT_SIZE);
                 }
             }
-
             // draw score
             g.setColor(Color.WHITE);
             g.setFont(new Font("Ink Free", Font.BOLD, 40));
@@ -92,9 +91,6 @@ public class GamePanel extends JPanel implements ActionListener {
         appleX = random.nextInt((int) (SCREEN_WIDTH/UNIT_SIZE))*UNIT_SIZE;
         appleY = random.nextInt((int) (SCREEN_HEIGHT/UNIT_SIZE))*UNIT_SIZE;
 
-    }
-    public void replay(){
-        startGame();
     }
     public void move(){
        for(int i = bodyParts; i>0;i-- ){
@@ -180,7 +176,6 @@ public class GamePanel extends JPanel implements ActionListener {
             resetSettings();
             startGame();
         }
-
     }
     @Override
     public void actionPerformed(ActionEvent e) {
